@@ -1,3 +1,4 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Jar of Souls</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,7 +42,7 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,9vw,52px);lin
 .tally span{width:12px;height:12px;border-radius:50%;border:1.5px solid #3b4a7a;transition:background .4s,border-color .4s,box-shadow .4s}
 .tally span.got{background:var(--soul);border-color:var(--soul);box-shadow:0 0 8px var(--soul)}
 #msg{min-height:1.5em;margin:0;font-style:italic;color:var(--frost);text-align:center}
-.again{font:inherit;font-size:16px;background:none;border:0;color:var(--frost);text-decoration:underline;cursor:pointer;padding:4px 8px}
+.again{font:inherit;font-size:19px;margin-top:6px;min-height:44px;padding:8px 26px;background:var(--deep);border:1px solid #7f95d6;border-radius:999px;color:var(--silver);cursor:pointer;box-shadow:0 0 18px rgba(140,165,255,.3)}
 button{font:inherit;color:var(--silver);cursor:pointer}
 button:focus-visible{outline:2px solid var(--frost);outline-offset:2px}
 #music{position:fixed;right:max(12px,calc(env(safe-area-inset-right,0px) + 12px));bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:20;font-size:15px;padding:6px 12px;background:rgba(14,21,48,.9);border:1px solid #2c3a66;border-radius:10px}
@@ -53,6 +54,14 @@ button:focus-visible{outline:2px solid var(--frost);outline-offset:2px}
 .start p{margin:0 0 26px;font-style:italic;color:var(--silver);font-size:clamp(22px,6vw,27px);line-height:1.45}
 .start button{font-size:20px;padding:10px 26px;background:var(--deep);border:1px solid #7f95d6;border-radius:999px;box-shadow:0 0 20px rgba(140,165,255,.3)}
 .start.gone{opacity:0;pointer-events:none;transition:opacity .7s}
+/* hidden admin door: tap the cork three times */
+.admin{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:rgba(3,5,12,.82);padding:0 16px}
+.admin .card{width:min(100%,320px);background:var(--deep);border:1px solid #2c3a66;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.admin label{font-family:var(--display);font-size:20px}
+.admin input{font:inherit;font-size:18px;padding:8px 10px;border-radius:8px;border:1px solid #3b4a7a;background:#060a17;color:var(--silver)}
+.admin .row{display:flex;gap:8px;justify-content:flex-end}
+.admin button{font-size:16px;min-height:44px;padding:6px 16px;border-radius:999px;border:1px solid #7f95d6;background:#0e1530}
+.admin p{margin:0;min-height:1.2em;font-size:15px;color:#ff9a8a;font-style:italic}
 @media (prefers-reduced-motion:reduce){#final{animation:none}}
 </style>
 
@@ -71,9 +80,15 @@ button:focus-visible{outline:2px solid var(--frost);outline-offset:2px}
   </div>
   <div class="tally" id="tally" aria-live="polite"></div>
   <p id="msg" role="status"></p>
-  <button class="again" id="again" type="button" hidden>Play again</button>
+  <button class="again" id="again" type="button" hidden>↺ Replay</button>
 </div>
 <button id="music" type="button" aria-pressed="false">♪ Music off</button>
+<div class="admin" id="admin" hidden><div class="card" role="dialog" aria-modal="true" aria-labelledby="apwl">
+  <label id="apwl" for="apw">Password</label>
+  <input id="apw" type="password" autocomplete="off">
+  <p id="aerr" role="status"></p>
+  <div class="row"><button id="acancel" type="button">Cancel</button><button id="aok" type="button">Open</button></div>
+</div></div>
 
 <script>
 (()=>{
@@ -81,17 +96,19 @@ button:focus-visible{outline:2px solid var(--frost);outline-offset:2px}
 const $=id=>document.getElementById(id);
 const FINAL=(()=>{const k=["moon","~","glass",String(9*13),"souls"].join("");let h=2166136261;for(let i=0;i<k.length;i++){h^=k.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
   let a=h>>>0;const nx=()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)&255;};
-  const b=Uint8Array.from(atob("KXaA0CHptLInvFf86kewHsND8gehXeKfoRuV"),c=>c.charCodeAt(0)^nx());return new TextDecoder().decode(b).split("|");})();
+  const b=Uint8Array.from(atob("KXaA0CHptLImvFD67EewHsND8gehXeyfpBmU"),c=>c.charCodeAt(0)^nx());return new TextDecoder().decode(b).split("|");})();
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const SAVE="jar-of-souls-moon-v1";
 
 /* ---------- levels ---------- */
 // turn: whether turning matters; drift: how fast the true angle wanders; shift: how far it jumps after each catch
-const LEVELS=[{souls:4,turn:false,drift:0,shift:.0,speed:.035},{souls:5,turn:true,drift:0,shift:.35,speed:.05},{souls:6,turn:true,drift:.16,shift:.45,speed:.07}];
+// wicked: souls that must never be caught; disguise: the wicked one only shows its red eyes while the moon is true
+const LEVELS=[{souls:4,wicked:0,disguise:false,turn:false,drift:0,shift:.0,speed:.085,moon:[-.34,-.42]},{souls:5,wicked:1,disguise:false,turn:true,drift:0,shift:.35,speed:.105,moon:[.36,.3]},{souls:6,wicked:1,disguise:true,turn:true,drift:.16,shift:.45,speed:.125,moon:[-.4,.28]}];
+const WICKED=["#ffb0a4","#c4120a"];
 const OK=.085; // how close to true the jar must be for the reflection to stop lying
 const SOULC=[["#bff6ff","#3fb6d9"],["#e3c8ff","#8a54d6"],["#ffc8e6","#d6549a"],["#c8ffd9","#3fbf6e"],["#fff0b8","#d1a43a"],["#d0dcff","#5a74d6"]];
 
-let lv=0,souls=[],turn=0,tilt=0,tTurn=0,tTilt=0,caught=0,won=false,playing=false,levelBusy=false,wasTrue=false,lastLie=0,shiftedHint=false,T=0;
+let lv=0,need=0,souls=[],turn=0,tilt=0,tTurn=0,tTilt=0,caught=0,won=false,playing=false,levelBusy=false,wasTrue=false,lastLie=0,shiftedHint=false,T=0;
 
 /* ---------- canvases ---------- */
 const cv=$("c"),g=cv.getContext("2d");
@@ -116,7 +133,7 @@ function warp(u,v,eT,eP,t){
 function err(){return Math.hypot(LEVELS[lv].turn?turn-tTurn:0,(tilt-tTilt)*1.25);}
 
 /* ---------- the room behind the glass ---------- */
-const MOON={u:-.34,v:-.42,r:.17};
+const MOON={u:-.34,v:-.42,r:.17};let pastTruths=[];
 const stars=Array.from({length:60},()=>({u:Math.random()*2-1,v:Math.random()*2-1,s:Math.random()*1.4+.4,p:Math.random()*6}));
 function drawRoom(t){
   const S=SRC/2,P=(u,v)=>[S+u*S,S+v*S];
@@ -131,12 +148,18 @@ function drawRoom(t){
   sg.strokeStyle="#02030a";sg.lineWidth=3;sg.lineCap="round";sg.beginPath();const [b0x,b0y]=P(1,-.1);sg.moveTo(b0x,b0y);const [b1x,b1y]=P(.45,-.25);sg.quadraticCurveTo(...P(.75,-.05),b1x,b1y);const [b2x,b2y]=P(.2,-.55);sg.quadraticCurveTo(...P(.3,-.3),b2x,b2y);sg.stroke();
   sg.lineWidth=1.6;sg.beginPath();sg.moveTo(...P(.62,-.15));sg.lineTo(...P(.58,-.42));sg.moveTo(...P(.38,-.36));sg.lineTo(...P(.48,-.6));sg.stroke();
   // the souls
+  const trueNow=err()<OK;
   souls.forEach(s=>{if(s.gone)return;const [x,y]=P(s.u,s.v),r=s.r*S*(1+.06*Math.sin(t*3+s.p));
+    const evil=s.kind==="wicked"&&(!LEVELS[lv].disguise||trueNow);if(s.kind==="wicked")s.c=evil?WICKED:s.mask;
     const gl=sg.createRadialGradient(x,y,r*.2,x,y,r*2.4);gl.addColorStop(0,s.c[0]);gl.addColorStop(.35,s.c[1]+"aa");gl.addColorStop(1,s.c[1]+"00");sg.fillStyle=gl;sg.beginPath();sg.arc(x,y,r*2.4,0,7);sg.fill();
     sg.fillStyle=s.c[0];sg.beginPath();sg.arc(x,y-r*.15,r,Math.PI,0);sg.lineTo(x+r,y+r*.9);
     for(let i=0;i<3;i++){const x0=x+r-i*(2*r/3);sg.quadraticCurveTo(x0-r/3,y+r*(.55+.15*Math.sin(t*5+i)),x0-2*r/3,y+r*.9);}
     sg.closePath();sg.fill();
     sg.fillStyle="#0b0f24";sg.beginPath();sg.ellipse(x-r*.35,y-r*.2,r*.14,r*.22,0,0,7);sg.ellipse(x+r*.35,y-r*.2,r*.14,r*.22,0,0,7);sg.fill();
+    if(s.flee){sg.fillStyle="#fff";sg.beginPath();sg.arc(x-r*.35,y-r*.2,r*.2,0,7);sg.arc(x+r*.35,y-r*.2,r*.2,0,7);sg.fill();
+      sg.fillStyle="#c4120a";sg.beginPath();sg.arc(x-r*.35+r*.06*s.dx,y-r*.2,r*.08,0,7);sg.arc(x+r*.35+r*.06*s.dx,y-r*.2,r*.08,0,7);sg.fill();}
+    else if(evil){sg.save();sg.fillStyle="#ff2a14";sg.shadowColor="#ff2a14";sg.shadowBlur=6;sg.beginPath();sg.ellipse(x-r*.35,y-r*.2,r*.1,r*.12,0,0,7);sg.ellipse(x+r*.35,y-r*.2,r*.1,r*.12,0,0,7);sg.fill();sg.restore();
+      sg.strokeStyle="#5a0a06";sg.lineWidth=Math.max(1,r*.08);sg.beginPath();sg.moveTo(x-r*.55,y-r*.5);sg.lineTo(x-r*.15,y-r*.35);sg.moveTo(x+r*.55,y-r*.5);sg.lineTo(x+r*.15,y-r*.35);sg.stroke();}
     sg.beginPath();sg.ellipse(x,y+r*.25,r*.13,r*.17,0,0,7);sg.fill();});
 }
 function renderGlass(t){
@@ -178,15 +201,17 @@ const flights=[],ripples=[];
 
 /* ---------- souls drifting in the room ---------- */
 function spawn(){
-  const L=LEVELS[lv];souls=[];
-  for(let i=0;i<L.souls;i++){let u,v,ok=false;
+  const L=LEVELS[lv];souls=[];need=L.souls;
+  for(let i=0;i<L.souls+L.wicked;i++){let u,v,ok=false;
     for(let n=0;n<300&&!ok;n++){u=Math.random()*1.5-.75;v=Math.random()*1.4-.55;ok=u*u+v*v<.6&&Math.hypot(u-MOON.u,v-MOON.v)>.38&&souls.every(s=>Math.hypot(s.u-u,s.v-v)>.32);}
-    souls.push({u,v,hu:u,hv:v,r:.085,p:Math.random()*6,c:SOULC[i%SOULC.length],a:Math.random()*6,gone:false});}
+    const wk=i>=L.souls,mask=SOULC[Math.floor(Math.random()*SOULC.length)];
+    souls.push({u,v,hu:u,hv:v,r:.085,p:Math.random()*6,c:wk?(L.disguise?mask:WICKED):SOULC[i%SOULC.length],mask,kind:wk?"wicked":"good",a:Math.random()*6,gone:false});}
 }
 function newTruth(first){
   const L=LEVELS[lv];let a,b;
-  do{a=L.turn?(Math.random()*2-1)*1.1:0;b=(Math.random()*2-1)*.85;}while(first?Math.hypot(a-turn,(b-tilt)*1.25)<.55:Math.hypot(a-tTurn,b-tTilt)<L.shift*.7);
-  tTurn=a;tTilt=b;
+  // a new level's true angle is never near the start angle or any earlier level's true angle
+  let n=0;do{a=L.turn?(Math.random()*2-1)*1.1:0;b=(Math.random()*2-1)*.85;n++;}while(n<500&&(first?(Math.hypot(a-turn,(b-tilt)*1.25)<.55||pastTruths.some(([pa,pb])=>Math.hypot(a-pa,b-pb)<.6)):Math.hypot(a-tTurn,b-tTilt)<L.shift*.7));
+  tTurn=a;tTilt=b;if(first)pastTruths.push([a,b]);
 }
 function moveSouls(dt,t){const L=LEVELS[lv];souls.forEach(s=>{if(s.gone)return;s.a+=dt*(.6+Math.random()*.3);
   s.hu+=Math.cos(s.a)*L.speed*dt;s.hv+=Math.sin(s.a*1.3)*L.speed*dt*.8;const d=Math.hypot(s.hu,s.hv);if(d>.78){s.hu*=.78/d;s.hv*=.78/d;s.a+=Math.PI*.7;}
@@ -197,6 +222,20 @@ function moveSouls(dt,t){const L=LEVELS[lv];souls.forEach(s=>{if(s.gone)return;s
 
 /* ---------- input: drag to turn and tilt, tap to catch ---------- */
 let down=null;
+// admin door: three quick taps on the cork ask for the password; the right one skips straight to the finale
+const ADMIN=217580182;let corkTaps=[];
+function adminHash(t){let h=2166136261;t="jar-admin|"+t;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}return h>>>0;}
+cv.addEventListener("pointerdown",e=>{if(!J)return;const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,{cx,cy,rx,ry}=J,nw=rx*.46,ny=cy-ry*.97;
+  if(x<cx-nw*.82||x>cx+nw*.82||y<ny-ry*.32||y>ny-ry*.14)return;
+  const now=performance.now();corkTaps=corkTaps.filter(t=>now-t<1500);corkTaps.push(now);
+  if(corkTaps.length>=3){corkTaps=[];$("aerr").textContent="";$("apw").value="";$("admin").hidden=false;$("apw").focus();}});
+function adminTry(){initAudio();if(adminHash($("apw").value)!==ADMIN){$("aerr").textContent="That's not it.";$("apw").select();return;}
+  $("admin").hidden=true;adminFinish();}
+function adminFinish(){
+  $("start").classList.add("gone");$("start").hidden=true;$("final").hidden=true;$("again").hidden=true;$("msg").textContent="";finale=null;won=false;
+  startLevel(2);souls.forEach(s=>{if(s.kind!=="wicked")s.gone=true;});caught=need;updateTally();turn=tTurn;tilt=tTilt;playing=true;levelDone();}
+$("aok").onclick=adminTry;$("acancel").onclick=()=>{$("admin").hidden=true;};
+$("apw").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();adminTry();}else if(e.key==="Escape")$("admin").hidden=true;});
 cv.addEventListener("pointerdown",e=>{if(!playing)return;initAudio();cv.setPointerCapture(e.pointerId);down={x:e.clientX,y:e.clientY,lx:e.clientX,ly:e.clientY,moved:false};});
 cv.addEventListener("pointermove",e=>{if(!down)return;const dx=e.clientX-down.lx,dy=e.clientY-down.ly;
   if(!down.moved&&Math.hypot(e.clientX-down.x,e.clientY-down.y)>7)down.moved=true;
@@ -213,31 +252,51 @@ function tapAt(x,y){
   const eT=LEVELS[lv].turn?turn-tTurn:0,[px,py]=warp(u,v,eT,tilt-tTilt,T);
   let best=null,bd=1e9;souls.forEach(s=>{if(s.gone)return;const d=Math.hypot(px-s.u,py-s.v);if(d<bd){bd=d;best=s;}});
   if(!best||bd>best.r*1.9){ripples.push({x,y,t0:T});sTap();return;}
+  if(err()<OK&&best.kind==="wicked"){wickedCaught(best,x,y);return;}
   if(err()<OK){best.gone=true;caught++;flights.push({x,y,c:best.c,t0:T});sCatch(caught);updateTally();
-    if(caught>=souls.length)levelDone();else{const L=LEVELS[lv];if(L.shift){newTruth(false);wasTrue=false;setTimeout(sShift,250);
+    if(caught>=need)levelDone();else{const L=LEVELS[lv];if(L.shift){newTruth(false);wasTrue=false;setTimeout(sShift,250);
       if(!shiftedHint){shiftedHint=true;$("msg").textContent="The moonlight shifted. Find the true moon again.";setTimeout(()=>{if($("msg").textContent.startsWith("The moonlight"))$("msg").textContent="";},3500);}}}
   }else{best.hu=-best.hu*.8;best.hv=-best.hv*.6;best.a+=2;ripples.push({x,y,t0:T});sLie();
     if(T-lastLie>8){$("msg").textContent="The reflection lies. Make the moon true first.";lastLie=T;setTimeout(()=>{if($("msg").textContent.startsWith("The reflection"))$("msg").textContent="";},3200);}}
 }
 
+// catching the wicked soul spills the jar: every soul caught on this level escapes again
+function wickedCaught(w,x,y){
+  ripples.push({x,y,t0:T});sWicked();w.hu=-w.hu;w.hv=-w.hv;w.a+=2;
+  souls.forEach(s=>{if(s.gone&&s.kind!=="wicked"){s.gone=false;s.hu=Math.random()*1.2-.6;s.hv=Math.random()*1.1-.45;}});
+  caught=0;updateTally();
+  $("msg").textContent="The wicked soul shrieks and the jar spills! Catch them again.";
+  setTimeout(()=>{if($("msg").textContent.startsWith("The wicked"))$("msg").textContent="";},3800);
+}
 /* ---------- levels & ui ---------- */
 function phases(){const p=$("phases");p.innerHTML="";p.setAttribute("aria-label",`Level ${lv+1} of 3`);
   const d=["M10 2 A8 8 0 0 1 10 18 A5 8 0 0 0 10 2Z","M10 2 A8 8 0 0 1 10 18 Z","M10 2 A8 8 0 1 1 9.99 2Z"];
   for(let i=0;i<3;i++)p.insertAdjacentHTML("beforeend",`<svg viewBox="0 0 20 20" class="${i<lv||(won&&i===lv)?"done":i===lv?"now":""}"><circle class="ring" cx="10" cy="10" r="8"/><path class="lit" d="${d[i]}"/></svg>`);}
-function updateTally(){const tl=$("tally");tl.innerHTML="";souls.forEach((s,i)=>tl.insertAdjacentHTML("beforeend",`<span class="${i<caught?"got":""}"></span>`));tl.setAttribute("aria-label",`${caught} of ${souls.length} souls caught`);}
-function startLevel(n){lv=n;caught=0;wasTrue=false;levelBusy=false;turn=LEVELS[n].turn?(Math.random()*.4-.2):0;tilt=Math.random()*.3-.15;spawn();newTruth(true);phases();updateTally();save();}
+function updateTally(){const tl=$("tally");tl.innerHTML="";for(let i=0;i<need;i++)tl.insertAdjacentHTML("beforeend",`<span class="${i<caught?"got":""}"></span>`);tl.setAttribute("aria-label",`${caught} of ${need} souls caught`);}
+function startLevel(n){lv=n;if(n===0)pastTruths=[];MOON.u=LEVELS[n].moon[0];MOON.v=LEVELS[n].moon[1];caught=0;wasTrue=false;levelBusy=false;turn=LEVELS[n].turn?(Math.random()*.4-.2):0;tilt=Math.random()*.3-.15;spawn();newTruth(true);phases();updateTally();save();
+  const warn=["","Beware the red-eyed soul. Never catch it.","One of them is not what it seems. Only the true moon shows its eyes."][n];
+  if(warn)setTimeout(()=>{if(!won){$("msg").textContent=warn;setTimeout(()=>{if($("msg").textContent===warn)$("msg").textContent="";},5000);}},2700);}
 function levelDone(){levelBusy=true;sLevel();
   if(lv<2){$("msg").textContent=["The first jar is full.","The second jar is full."][lv];setTimeout(()=>{$("msg").textContent="";startLevel(lv+1);},2600);}
-  else{won=true;save();setTimeout(()=>showFinal(true),900);}}
+  else{won=true;save();startFinale();setTimeout(()=>showFinal(true),900);}}
+// the finale: the moon rises clear of the coordinates and the wicked soul scurries out of the jar
+let finale=null;const MOON_END=[-.3,-.55];
+function startFinale(){finale={t0:T};
+  souls.forEach(s=>{if(s.kind==="wicked"&&!s.gone){let dx=s.u>=0?1:-1,dy=-.25;const l=Math.hypot(dx,dy);s.dx=dx/l;s.dy=dy/l;s.fv=.5;s.flee=true;}});
+  if(souls.some(s=>s.flee))setTimeout(sScared,150);}
+function stepFinale(dt){
+  const k=Math.min(1,dt*2.2);MOON.u+=(MOON_END[0]-MOON.u)*k;MOON.v+=(MOON_END[1]-MOON.v)*k;
+  souls.forEach(s=>{if(!s.flee||s.gone)return;s.fv+=dt*3;s.u+=s.dx*s.fv*dt;s.v+=s.dy*s.fv*dt+Math.sin(T*28)*.006;s.hu=s.u;s.hv=s.v;if(Math.hypot(s.u,s.v)>1.4)s.gone=true;});}
 function showFinal(celebrate){won=true;playing=false;phases();$("fn").textContent=FINAL[0];$("fw").textContent=FINAL[1];$("final").hidden=false;$("again").hidden=false;
   $("msg").textContent="Every soul is gathered. The moon shows the way.";turn=tTurn;tilt=tTilt;if(celebrate)victory();}
-function save(){try{localStorage.setItem(SAVE,JSON.stringify({lv,won}));}catch(e){}}
-$("again").onclick=()=>{won=false;playing=true;$("final").hidden=true;$("again").hidden=true;$("msg").textContent="";startLevel(0);};
+function save(){}
+$("again").onclick=()=>{finale=null;won=false;playing=true;$("final").hidden=true;$("again").hidden=true;$("msg").textContent="";startLevel(0);};
 
 /* ---------- loop ---------- */
 let last=performance.now();
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;T=now/1000;
   if(playing&&!levelBusy)moveSouls(dt,T);
+  if(finale)stepFinale(dt);
   const trueNow=err()<OK;if(playing&&trueNow&&!wasTrue)sTrue();wasTrue=trueNow;
   drawRoom(T);renderGlass(T);drawJar(T,trueNow||won);
   requestAnimationFrame(frame);}
@@ -259,6 +318,14 @@ function tone(f,t,dur,type,gn,dest,f2,att){const o=ctx.createOscillator(),a=ctx.
 function glass(m,t,v,dest,dur){[[1,1],[2.01,.3],[3.98,.1]].forEach(([r,a])=>tone(hz(m)*r,t,(dur||1.8)/Math.sqrt(r),"sine",(v||.08)*a,dest||echoIn,0,.03));}
 function sTrue(){if(!ctx)return;const t=ctx.currentTime;glass(84,t,.06);glass(91,t+.08,.04);}
 function sShift(){if(!ctx)return;const t=ctx.currentTime;[88,84,81].forEach((m,i)=>glass(m,t+i*.09,.03));}
+function sWicked(){if(!ctx)return;const t=ctx.currentTime;tone(hz(40),t,1.1,"sawtooth",.12,master,hz(28));tone(hz(41),t,1.1,"sawtooth",.08,echoIn,hz(29));[89,88,85].forEach((m,i)=>glass(m,t+.05+i*.07,.05));}
+function sScared(){if(!ctx)return;const t=ctx.currentTime,out=ctx.createGain();out.gain.value=1;out.connect(master);out.connect(echoIn);
+  [[0,760,1900,1100],[.3,880,2100,900]].forEach(([dt,a,b,c])=>{const o=ctx.createOscillator(),v=ctx.createOscillator(),vg=ctx.createGain(),g=ctx.createGain();o.type="triangle";
+    o.frequency.setValueAtTime(a,t+dt);o.frequency.exponentialRampToValueAtTime(b,t+dt+.12);o.frequency.exponentialRampToValueAtTime(c,t+dt+.45);
+    v.frequency.value=22;vg.gain.value=60;v.connect(vg);vg.connect(o.frequency);g.gain.setValueAtTime(0,t+dt);g.gain.linearRampToValueAtTime(.09,t+dt+.03);g.gain.exponentialRampToValueAtTime(.0001,t+dt+.5);
+    o.connect(g);g.connect(out);o.start(t+dt);v.start(t+dt);o.stop(t+dt+.55);v.stop(t+dt+.55);});
+  for(let i=0;i<10;i++){const tt=t+.15+i*.075,s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();s.buffer=noiseBuf;f.type="bandpass";f.frequency.value=2600+(i%2)*700;f.Q.value=6;
+    g.gain.setValueAtTime(.16*(1-i/11),tt);g.gain.exponentialRampToValueAtTime(.0001,tt+.035);s.connect(f);f.connect(g);g.connect(master);s.start(tt,Math.random(),.05);}}
 function sTap(){if(!ctx)return;tone(1800,ctx.currentTime,.08,"sine",.03);}
 function sLie(){if(!ctx)return;const t=ctx.currentTime,s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),a=ctx.createGain();s.buffer=noiseBuf;f.type="bandpass";f.frequency.setValueAtTime(3000,t);f.frequency.exponentialRampToValueAtTime(600,t+.4);f.Q.value=3;
   a.gain.setValueAtTime(.12,t);a.gain.exponentialRampToValueAtTime(.0001,t+.45);s.connect(f);f.connect(a);a.connect(master);s.start(t,Math.random());s.stop(t+.5);tone(330,t,.4,"triangle",.05,master,210);}
@@ -289,11 +356,14 @@ $("music").onclick=e=>{musicOn=!musicOn;e.currentTarget.setAttribute("aria-press
 
 /* ---------- start ---------- */
 size();
-let saved=null;try{saved=JSON.parse(localStorage.getItem(SAVE));}catch(e){}
-if(saved&&saved.won){$("start").hidden=true;lv=2;spawn();souls.forEach(s=>s.gone=true);caught=souls.length;updateTally();showFinal(false);}
+// every visit starts from the first level
+let saved=null;try{localStorage.removeItem(SAVE);}catch(e){}
+if(saved&&saved.won){$("start").hidden=true;lv=2;spawn();souls.forEach(s=>s.gone=true);caught=need;updateTally();showFinal(false);}
 else{startLevel(saved&&Number.isInteger(saved.lv)&&saved.lv>=0&&saved.lv<3?saved.lv:0);
   $("go").onclick=()=>{initAudio();playing=true;$("start").classList.add("gone");setTimeout(()=>$("start").hidden=true,700);cv.focus({preventScroll:true});};}
 requestAnimationFrame(frame);
-window.__moon={truth:()=>[tTurn,tTilt],set:(a,b)=>{turn=a;tilt=b;},err,lv:()=>lv,caught:()=>caught,souls:()=>souls.map(s=>[s.u,s.v,s.gone]),tapAt,J:()=>J,warp,won:()=>won};
+window.__moon={truth:()=>[tTurn,tTilt],set:(a,b)=>{turn=a;tilt=b;},err,lv:()=>lv,caught:()=>caught,souls:()=>souls.map(s=>[s.u,s.v,s.gone,s.kind]),tapAt,J:()=>J,warp,won:()=>won};
 })();
 </script>
+
+</body></html>
