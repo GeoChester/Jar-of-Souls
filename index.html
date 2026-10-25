@@ -103,9 +103,9 @@ const SAVE="jar-of-souls-moon-v1";
 /* ---------- levels ---------- */
 // turn: whether turning matters; drift: how fast the true angle wanders; shift: how far it jumps after each catch
 // wicked: souls that must never be caught; disguise: the wicked one only shows its red eyes while the moon is true
-const LEVELS=[{souls:4,wicked:0,disguise:false,turn:false,drift:0,shift:.0,speed:.085,moon:[-.34,-.42]},{souls:5,wicked:1,disguise:false,turn:true,drift:0,shift:.35,speed:.105,moon:[.36,.3]},{souls:6,wicked:1,disguise:true,turn:true,drift:.16,shift:.45,speed:.125,moon:[-.4,.28]}];
+const LEVELS=[{souls:4,wicked:0,disguise:false,turn:true,drift:0,shift:.0,speed:.085,moon:[-.34,-.42]},{souls:5,wicked:1,disguise:false,turn:true,drift:0,shift:.35,speed:.105,moon:[.36,.3]},{souls:6,wicked:1,disguise:true,turn:true,drift:.13,shift:.45,speed:.125,moon:[-.4,.28],ok:.093}];
 const WICKED=["#ffb0a4","#c4120a"];
-const OK=.085; // how close to true the jar must be for the reflection to stop lying
+let OK=.085; // how close to true the jar must be for the reflection to stop lying (the last level is a touch more forgiving)
 const SOULC=[["#bff6ff","#3fb6d9"],["#e3c8ff","#8a54d6"],["#ffc8e6","#d6549a"],["#c8ffd9","#3fbf6e"],["#fff0b8","#d1a43a"],["#d0dcff","#5a74d6"]];
 
 let lv=0,need=0,souls=[],turn=0,tilt=0,tTurn=0,tTilt=0,caught=0,won=false,playing=false,levelBusy=false,wasTrue=false,lastLie=0,shiftedHint=false,T=0;
@@ -273,7 +273,7 @@ function phases(){const p=$("phases");p.innerHTML="";p.setAttribute("aria-label"
   const d=["M10 2 A8 8 0 0 1 10 18 A5 8 0 0 0 10 2Z","M10 2 A8 8 0 0 1 10 18 Z","M10 2 A8 8 0 1 1 9.99 2Z"];
   for(let i=0;i<3;i++)p.insertAdjacentHTML("beforeend",`<svg viewBox="0 0 20 20" class="${i<lv||(won&&i===lv)?"done":i===lv?"now":""}"><circle class="ring" cx="10" cy="10" r="8"/><path class="lit" d="${d[i]}"/></svg>`);}
 function updateTally(){const tl=$("tally");tl.innerHTML="";for(let i=0;i<need;i++)tl.insertAdjacentHTML("beforeend",`<span class="${i<caught?"got":""}"></span>`);tl.setAttribute("aria-label",`${caught} of ${need} souls caught`);}
-function startLevel(n){lv=n;if(n===0)pastTruths=[];MOON.u=LEVELS[n].moon[0];MOON.v=LEVELS[n].moon[1];caught=0;wasTrue=false;levelBusy=false;turn=LEVELS[n].turn?(Math.random()*.4-.2):0;tilt=Math.random()*.3-.15;spawn();newTruth(true);phases();updateTally();save();
+function startLevel(n){lv=n;OK=LEVELS[n].ok||.085;if(n===0)pastTruths=[];MOON.u=LEVELS[n].moon[0];MOON.v=LEVELS[n].moon[1];caught=0;wasTrue=false;levelBusy=false;turn=LEVELS[n].turn?(Math.random()*.4-.2):0;tilt=Math.random()*.3-.15;spawn();newTruth(true);phases();updateTally();save();
   const warn=["","Beware the red-eyed soul. Never catch it.","One of them is not what it seems. Only the true moon shows its eyes."][n];
   if(warn)setTimeout(()=>{if(!won){$("msg").textContent=warn;setTimeout(()=>{if($("msg").textContent===warn)$("msg").textContent="";},5000);}},2700);}
 function levelDone(){levelBusy=true;sLevel();
