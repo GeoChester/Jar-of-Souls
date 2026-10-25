@@ -96,7 +96,7 @@ button:focus-visible{outline:2px solid var(--frost);outline-offset:2px}
 const $=id=>document.getElementById(id);
 const FINAL=(()=>{const k=["moon","~","glass",String(9*13),"souls"].join("");let h=2166136261;for(let i=0;i<k.length;i++){h^=k.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
   let a=h>>>0;const nx=()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)&255;};
-  const b=Uint8Array.from(atob("KXaA0CHptLImvFD67EewHsND8gehXeyfpBmU"),c=>c.charCodeAt(0)^nx());return new TextDecoder().decode(b).split("|");})();
+  const b=Uint8Array.from(atob("KXaA0CHptLInvFf86kewHsND8gehXeKfoRuV"),c=>c.charCodeAt(0)^nx());return new TextDecoder().decode(b).split("|");})();
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const SAVE="jar-of-souls-moon-v1";
 
