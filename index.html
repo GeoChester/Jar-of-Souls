@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Jar of Souls</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -54,14 +54,6 @@ button:focus-visible{outline:2px solid var(--frost);outline-offset:2px}
 .start p{margin:0 0 26px;font-style:italic;color:var(--silver);font-size:clamp(22px,6vw,27px);line-height:1.45}
 .start button{font-size:20px;padding:10px 26px;background:var(--deep);border:1px solid #7f95d6;border-radius:999px;box-shadow:0 0 20px rgba(140,165,255,.3)}
 .start.gone{opacity:0;pointer-events:none;transition:opacity .7s}
-/* hidden admin door: tap the cork three times */
-.admin{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:rgba(3,5,12,.82);padding:0 16px}
-.admin .card{width:min(100%,320px);background:var(--deep);border:1px solid #2c3a66;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px}
-.admin label{font-family:var(--display);font-size:20px}
-.admin input{font:inherit;font-size:18px;padding:8px 10px;border-radius:8px;border:1px solid #3b4a7a;background:#060a17;color:var(--silver)}
-.admin .row{display:flex;gap:8px;justify-content:flex-end}
-.admin button{font-size:16px;min-height:44px;padding:6px 16px;border-radius:999px;border:1px solid #7f95d6;background:#0e1530}
-.admin p{margin:0;min-height:1.2em;font-size:15px;color:#ff9a8a;font-style:italic}
 @media (prefers-reduced-motion:reduce){#final{animation:none}}
 </style>
 
@@ -83,12 +75,6 @@ button:focus-visible{outline:2px solid var(--frost);outline-offset:2px}
   <button class="again" id="again" type="button" hidden>↺ Replay</button>
 </div>
 <button id="music" type="button" aria-pressed="false">♪ Music off</button>
-<div class="admin" id="admin" hidden><div class="card" role="dialog" aria-modal="true" aria-labelledby="apwl">
-  <label id="apwl" for="apw">Password</label>
-  <input id="apw" type="password" autocomplete="off">
-  <p id="aerr" role="status"></p>
-  <div class="row"><button id="acancel" type="button">Cancel</button><button id="aok" type="button">Open</button></div>
-</div></div>
 
 <script>
 (()=>{
@@ -222,20 +208,6 @@ function moveSouls(dt,t){const L=LEVELS[lv];souls.forEach(s=>{if(s.gone)return;s
 
 /* ---------- input: drag to turn and tilt, tap to catch ---------- */
 let down=null;
-// admin door: three quick taps on the cork ask for the password; the right one skips straight to the finale
-const ADMIN=217580182;let corkTaps=[];
-function adminHash(t){let h=2166136261;t="jar-admin|"+t;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}return h>>>0;}
-cv.addEventListener("pointerdown",e=>{if(!J)return;const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,{cx,cy,rx,ry}=J,nw=rx*.46,ny=cy-ry*.97;
-  if(x<cx-nw*.82||x>cx+nw*.82||y<ny-ry*.32||y>ny-ry*.14)return;
-  const now=performance.now();corkTaps=corkTaps.filter(t=>now-t<1500);corkTaps.push(now);
-  if(corkTaps.length>=3){corkTaps=[];$("aerr").textContent="";$("apw").value="";$("admin").hidden=false;$("apw").focus();}});
-function adminTry(){initAudio();if(adminHash($("apw").value)!==ADMIN){$("aerr").textContent="That's not it.";$("apw").select();return;}
-  $("admin").hidden=true;adminFinish();}
-function adminFinish(){
-  $("start").classList.add("gone");$("start").hidden=true;$("final").hidden=true;$("again").hidden=true;$("msg").textContent="";finale=null;won=false;
-  startLevel(2);souls.forEach(s=>{if(s.kind!=="wicked")s.gone=true;});caught=need;updateTally();turn=tTurn;tilt=tTilt;playing=true;levelDone();}
-$("aok").onclick=adminTry;$("acancel").onclick=()=>{$("admin").hidden=true;};
-$("apw").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();adminTry();}else if(e.key==="Escape")$("admin").hidden=true;});
 cv.addEventListener("pointerdown",e=>{if(!playing)return;initAudio();cv.setPointerCapture(e.pointerId);down={x:e.clientX,y:e.clientY,lx:e.clientX,ly:e.clientY,moved:false};});
 cv.addEventListener("pointermove",e=>{if(!down)return;const dx=e.clientX-down.lx,dy=e.clientY-down.ly;
   if(!down.moved&&Math.hypot(e.clientX-down.x,e.clientY-down.y)>7)down.moved=true;
@@ -362,7 +334,6 @@ if(saved&&saved.won){$("start").hidden=true;lv=2;spawn();souls.forEach(s=>s.gone
 else{startLevel(saved&&Number.isInteger(saved.lv)&&saved.lv>=0&&saved.lv<3?saved.lv:0);
   $("go").onclick=()=>{initAudio();playing=true;$("start").classList.add("gone");setTimeout(()=>$("start").hidden=true,700);cv.focus({preventScroll:true});};}
 requestAnimationFrame(frame);
-window.__moon={truth:()=>[tTurn,tTilt],set:(a,b)=>{turn=a;tilt=b;},err,lv:()=>lv,caught:()=>caught,souls:()=>souls.map(s=>[s.u,s.v,s.gone,s.kind]),tapAt,J:()=>J,warp,won:()=>won};
 })();
 </script>
 
